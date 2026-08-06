@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV, Diego F. Martínez-Valencia</title>
+<meta name="description" content="Applied Scientist. Generative AI, agentic systems, large-scale ML.">
+<meta property="og:title" content="CV, Diego F. Martínez-Valencia">
+<meta property="og:description" content="Applied Scientist. Generative AI, agentic systems, large-scale ML.">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="style.css">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="">Diego F. Martínez-Valencia</a></h1>
+  <p>Applied AI scientist. Machine learning applied to quantum computing.</p>
+  <nav><a href="">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
+</header>
+<h1>DIEGO F. MARTÍNEZ-VALENCIA</h1>
+<p><strong>Applied Scientist | Generative AI, Agentic Systems, Large-Scale ML</strong></p>
+<p>New York, NY • valencia.diego825@gmail.com • <a href="https://www.linkedin.com/in/diego-valencia9808">LinkedIn</a> • <a href="https://scholar.google.com/citations?user=hezlfsQAAAAJ">Google Scholar</a> • <a href="https://orcid.org/0009-0009-7329-9377">ORCID</a> • <a href="https://huggingface.co/Bauxitiego">Hugging Face</a> • <a href="https://github.com/Bauxitiego">GitHub</a></p>
+<hr />
+<h2>SUMMARY</h2>
+<p>Six years building and shipping production ML and generative AI systems inside enterprise environments. Current focus is agentic architectures: multi-tool LLM systems on MCP servers, with governance, human-in-the-loop control, and evaluation harnesses that gate them before release. I work the full lifecycle, from framing the problem and designing the experiment through training, evaluation, deployment, and drift monitoring. PhD research on formal verification and evaluation of AI systems, including explaining why a model or pipeline reached a given decision. Comfortable explaining probabilistic model behavior to executives who need to make a decision from it.</p>
+<hr />
+<h2>PROFESSIONAL EXPERIENCE</h2>
+<h3>Senior Applied AI Scientist / Consultant, Professional Services III</h3>
+<p><strong>Amazon Advertising | New York, NY | April 2025 to Present</strong>
+<em>Promoted to Senior (Professional Services III) in July 2026, with expanded technical leadership across advertiser engagements.</em></p>
+<ul>
+<li>Built and shipped a production multi-agent system connecting Salesforce to Amazon Ads through the AWS Data Processing MCP and Amazon Ads MCP. It surfaces each advertiser's AdTech stack in real time across 280 accounts, cutting roughly 4 hours of manual discovery per account per month (about 1,120 analyst hours monthly, sustained over two quarters).</li>
+<li>Build and evaluate LLM-backed agents for bidding policy optimization, audience modeling, and automated experimentation. Where calibration and deterministic behavior matter more than generative flexibility, I fall back to classical methods, mainly time-series forecasting, which is where my MSc work sits.</li>
+<li>Own ML pipelines end to end, from problem framing through production, moving large-scale advertising and behavioral data through S3, Glue, EMR, SageMaker, and Lambda with reproducible training runs, versioned artifacts, and automated retraining triggers.</li>
+<li>Built the evaluation frameworks that gate every agentic system before handoff: offline benchmark suites, LLM-as-judge scoring against human-labeled ground truth, guardrails for hallucination and logical error, latency and cost budgets, and A/B tests measuring lift over the production baseline.</li>
+<li>Instrument live systems for accuracy, latency, tool-call failure rates, and drift, with retry and fallback logic and defined escalation paths where a human needs to approve the decision.</li>
+<li>Mentor engineers and scientists on experimental design and evaluation rigor, and lead technical design reviews across advertiser engagements.</li>
+<li>Work directly with CTOs and CMOs, turning evaluation results and model behavior into decisions they can act on. Recurring field problems get written up as product feature requests that shape roadmap.</li>
+</ul>
+<h3>Data &amp; AI Architect, Professional Services II</h3>
+<p><strong>Amazon Web Services (Germany) | Munich, Germany | July 2022 to April 2025</strong></p>
+<ul>
+<li>Wrote and debugged the model and pipeline code that put customer AI/ML and generative AI workloads into production, rather than stopping at reference architecture.</li>
+<li>Built the data foundations that make training at scale tractable: enterprise data lakes, Data Mesh platforms, and feature pipelines on Spark, EMR, Iceberg, and Hadoop. Most stalled ML projects I inherited were blocked on data readiness, not on modeling.</li>
+<li>Led a team of data and ML engineers, setting the reproducibility, CI/CD, security, and cost-control practices that kept delivered systems in use after handoff.</li>
+<li>Ran architecture and performance reviews, finding bottlenecks and shipping fixes that improved training throughput, inference latency, and unit economics.</li>
+<li>Advised senior stakeholders on aligning analytics and AI strategy with measurable business KPIs.</li>
+</ul>
+<h3>Data Architect, Professional Services I</h3>
+<p><strong>Amazon Web Services (Colombia) | Bogotá, Colombia | August 2020 to July 2022</strong></p>
+<ul>
+<li>Designed, built, and deployed production data and ML pipelines on AWS Glue, Spark, and Lambda, clearing the integration and data-quality blockers that kept enterprise systems from reaching production.</li>
+<li>Partnered with senior architects on solutions spanning security, governance, observability, and scalability.</li>
+<li>Led customer discovery sessions and translated open-ended business needs into concrete technical specifications.</li>
+<li>Ran internal workshops and knowledge-sharing sessions.</li>
+</ul>
+<hr />
+<h2>RESEARCH</h2>
+<h3>Ph.D. Researcher, AI Compliance, Evaluation &amp; Interpretability</h3>
+<p><strong>Universitat Oberta de Catalunya, SOM Research Lab | Barcelona, Spain | 2025 to Present</strong></p>
+<p>Ontology-driven regulatory compliance verification for AI-assisted software and data pipelines. The goal is formal representations that make model and pipeline behavior checkable rather than just observable. Part of that is explaining why a system produced a given decision, which carries over directly to interpretability and safety evaluation of agentic systems. Experiments and tooling run on Google Cloud Platform (Vertex AI).</p>
+<ul>
+<li>Focus: formal verification of AI system behavior, evaluation methodology, interpretability of automated decisions.</li>
+<li>Methods: ontology engineering, LLM-assisted code and pipeline analysis, experimental design, statistical validation.</li>
+</ul>
+<hr />
+<h2>PUBLICATIONS, TALKS &amp; OPEN SOURCE</h2>
+<ul>
+<li>
+<p><em>[Models, dataset &amp; study]</em> <strong>Neural decoders for the surface code</strong>, 2026. A study of when learned decoders beat minimum-weight perfect matching, holding total noise constant and varying only its structure. At distance 3 the learned decoder matches matching given the true noise model and beats a realistically mis-specified one by 2x. <a href="01-what-a-decoder-does.html">Write-up</a> • <a href="https://github.com/Bauxitiego/qec-neural-decoder">github.com/Bauxitiego/qec-neural-decoder</a> • <a href="https://huggingface.co/Bauxitiego/surface-code-neural-decoder">models</a> • <a href="https://huggingface.co/datasets/Bauxitiego/surface-code-syndromes">dataset</a></p>
+</li>
+<li>
+<p><em>[Dataset]</em> <strong>Surface code syndromes, ML-ready</strong>, 2026. 6.5M real Sycamore shots reformatted from Google's CC-BY release into a loadable schema with published decoder baselines bundled per shot. <a href="https://huggingface.co/datasets/Bauxitiego/surface-code-syndromes">huggingface.co/datasets/Bauxitiego/surface-code-syndromes</a></p>
+</li>
+<li>
+<p><em>[Dataset &amp; benchmark]</em> <strong>ToolBudget: a cost-aware benchmark for tool-using agents.</strong> Dataset and evaluation harness, 2026. Measures cost per success rather than accuracy alone: 67 verified tasks, a deterministic synthetic environment, and a model-agnostic harness. <a href="https://github.com/Bauxitiego/toolbudget">github.com/Bauxitiego/toolbudget</a></p>
+</li>
+</ul>
+<hr />
+<h2>EDUCATION</h2>
+<p><strong>Ph.D., Computer Science (Artificial Intelligence &amp; Machine Learning) | 2025 to Present</strong>
+Universitat Oberta de Catalunya, SOM Research Lab, Barcelona, Spain</p>
+<p><strong>M.Sc., Quantum Technology Applications and Management | 2023 to 2026</strong>
+University of Sussex, Brighton, UK. Emerging computing paradigms, quantum systems, high-performance computing.</p>
+<p><strong>M.Sc., Electronics Engineering &amp; Computer Science | 2020 to 2021</strong>
+Universidad de los Andes, Bogotá, Colombia. Time-series forecasting and classical supervised ML on large-scale data systems, in Python and PySpark.</p>
+<p><strong>B.S., Electronics Engineering | 2016 to 2020</strong>
+Universidad de los Andes, Bogotá, Colombia. Deep learning applied to materials science and nanotechnology using Python, TensorFlow, and Keras.</p>
+<hr />
+<h2>TECHNICAL SKILLS</h2>
+<p><strong>Machine learning and research:</strong> time-series forecasting and classical supervised ML, deep learning (TensorFlow, Keras), LLM fine-tuning and prompt optimization, agentic and multi-agent architectures, experimental design, A/B testing, model evaluation and benchmarking, interpretability of model decisions</p>
+<p><strong>Generative AI systems:</strong> MCP server design and multi-tool orchestration (AWS and Vertex AI hosted), evaluation harnesses (offline benchmarks, LLM-as-judge, human-labeled ground truth), guardrails and hallucination mitigation, human-in-the-loop workflow design, drift and performance monitoring</p>
+<p><strong>Programming:</strong> Python (primary), SQL, R, MATLAB</p>
+<p><strong>ML infrastructure:</strong> AWS (SageMaker, S3, Lambda, Glue, EMR, RDS, CloudFormation), Google Cloud (Vertex AI)</p>
+<p><strong>Data at scale:</strong> Spark, PySpark, Iceberg, Hadoop, enterprise data lakes, Data Mesh, feature pipelines</p>
+<p><strong>Tooling:</strong> Git, CI/CD, Tableau</p>
+<p><strong>Certifications:</strong> AWS Machine Learning Engineer • AWS GenAI Practitioner • AWS Cloud Practitioner • Google Data Analytics Professional Certificate • Tableau Desktop Specialist</p>
+<p><strong>Languages:</strong> Spanish (native), English (fluent), German (conversational)</p>
+<hr />
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>

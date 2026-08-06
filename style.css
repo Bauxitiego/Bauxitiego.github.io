@@ -23,7 +23,8 @@ a:hover { text-decoration: underline; }
 header.site { margin-bottom: 44px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
 header.site h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.2px; }
 header.site h1 a { color: var(--ink); }
-header.site p { color: var(--muted); font-size: 14.5px; margin: 0; }
+header.site p { color: var(--muted); font-size: 14.5px; margin: 0 0 12px; }
+header.site nav a { font-size: 14.5px; margin-right: 16px; }
 h1.title { font-size: 30px; font-weight: 600; line-height: 1.25; margin: 0 0 10px; letter-spacing: -0.5px; }
 .meta { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
 h2 { font-size: 20px; font-weight: 600; margin: 38px 0 12px; letter-spacing: -0.2px; }
@@ -46,6 +47,7 @@ table { border-collapse: collapse; width: 100%; margin: 22px 0; font-size: 15px;
 th { text-align: left; font-weight: 600; padding: 8px 12px; border-bottom: 2px solid var(--ink); white-space: nowrap; }
 td { padding: 7px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
 td:not(:first-child), th:not(:first-child) { text-align: right; }
+.cv td, .cv th { text-align: left !important; white-space: normal; }
 .posts { list-style: none; padding: 0; margin: 0; }
 .posts li { margin-bottom: 30px; }
 .posts h2 { font-size: 19px; margin: 0 0 5px; }
