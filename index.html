@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diego F. Martínez-Valencia</title>
+<meta name="description" content="Machine learning applied to quantum computing.">
+<meta property="og:title" content="Diego F. Martínez-Valencia">
+<meta property="og:description" content="Machine learning applied to quantum computing.">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="style.css">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="">Diego F. Martínez-Valencia</a></h1>
+  <p>Applied AI scientist. Machine learning applied to quantum computing.</p>
+</header>
+
+<h1 class="title">Neural decoders for the surface code</h1>
+<p class="meta">A three-part series. Machine learning applied to quantum error correction.</p>
+<p>Quantum computers need error correction to be useful, and the software that does the
+correcting is currently one of the things standing between the machines that exist and the
+machines people want. These posts explain that problem for a machine learning audience, then
+measure where a learned decoder beats the standard classical one.</p>
+<ul class="posts"><li><h2><a href="01-what-a-decoder-does.html">What a quantum error decoder actually does</a></h2><p>Quantum error correction explained for people who train models. No results, just the background I wish I'd had before starting.</p></li>
+<li><h2><a href="02-matching-blind-spot.html">Why the standard quantum decoder has a blind spot</a></h2><p>How minimum-weight perfect matching works, the two assumptions it rests on, and the one design decision that makes the experiment mean anything.</p></li>
+<li><h2><a href="03-results.html">When a learned decoder beats matching, and when it doesn't</a></h2><p>The numbers. A learned decoder matches MWPM given a correct noise model and beats a realistic wrong one by 2x, and the failures are as informative as the wins.</p></li></ul>
+<div class="links">
+  <a href="https://github.com/Bauxitiego/qec-neural-decoder">Code</a>
+  <a href="https://huggingface.co/Bauxitiego/surface-code-neural-decoder">Models</a>
+  <a href="https://huggingface.co/datasets/Bauxitiego/surface-code-syndromes">Dataset</a>
+</div>
+
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When a learned decoder beats matching, and when it doesn't</title>
+<meta name="description" content="The numbers. A learned decoder matches MWPM given a correct noise model and beats a realistic wrong one by 2x, and the failures are as informative as the wins.">
+<meta property="og:title" content="When a learned decoder beats matching, and when it doesn't">
+<meta property="og:description" content="The numbers. A learned decoder matches MWPM given a correct noise model and beats a realistic wrong one by 2x, and the failures are as informative as the wins.">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="style.css">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="">Diego F. Martínez-Valencia</a></h1>
+  <p>Applied AI scientist. Machine learning applied to quantum computing.</p>
+</header>
+<h1>When a learned decoder beats matching, and when it doesn't</h1>
+<p><em>Post 3 of 3. <a href="01-what-a-decoder-does.html">Post 1</a> covered what a decoder does.
+<a href="02-matching-blind-spot.html">Post 2</a> covered the mechanism and what would falsify it. This one
+has the numbers.</em></p>
+<p>Short version: at distance 3 the learned decoder matches minimum-weight perfect matching when
+matching is given the true noise model, and beats it by up to a factor of two when matching
+is given a realistic wrong one. At distance 5 it loses every row, and the reason turns out to
+be how long I trained rather than anything about the architectures.</p>
+<p>Both halves of that are worth reading, and the second half took more work to establish than
+the first.</p>
+<h2>The result</h2>
+<p><img alt="Regime B crossover and the training budget curve" src="figures/results.png" /></p>
+<p>The left panel is the experiment. Every point carries the same total noise, calibrated by
+scaling the base error rate until detection-event density matches. Only the structure of the
+noise changes as you move right.</p>
+<table>
+<thead>
+<tr>
+<th>noise</th>
+<th>matching, true model</th>
+<th>matching, wrong model</th>
+<th>neural</th>
+<th>penalty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>uniform</td>
+<td>0.00652</td>
+<td>0.00652</td>
+<td>0.00617</td>
+<td>1.00x</td>
+</tr>
+<tr>
+<td>spread 1.0</td>
+<td>0.00695</td>
+<td>0.00702</td>
+<td>0.00646</td>
+<td>1.01x</td>
+</tr>
+<tr>
+<td>spread 1.75</td>
+<td>0.00639</td>
+<td>0.00656</td>
+<td>0.00591</td>
+<td>1.03x</td>
+</tr>
+<tr>
+<td>crosstalk</td>
+<td>0.01531</td>
+<td>0.02835</td>
+<td>0.01536</td>
+<td>1.85x</td>
+</tr>
+<tr>
+<td>spread + crosstalk</td>
+<td>0.01229</td>
+<td>0.02002</td>
+<td>0.01195</td>
+<td>1.63x</td>
+</tr>
+<tr>
+<td>strong both</td>
+<td>0.01974</td>
+<td>0.03949</td>
+<td>0.02006</td>
+<td>2.00x</td>
+</tr>
+</tbody>
+</table>
+<p>The green and purple lines sit on top of each other across the whole sweep. The learned
+decoder, given no noise model at all, does about as well as matching handed the exact model
+that generated the data. Meanwhile the orange line pulls away.</p>
+<h2>The part I did not expect</h2>
+<p>Look at rows two and three. Per-qubit error rate spread, even at a factor of 1.75, costs
+matching almost nothing: penalties of 1.01x and 1.03x. Crosstalk at row four costs it 1.85x.</p>
+<p>I had assumed both forms of mis-specification would hurt, and they do not. A graph with
+slightly wrong edge weights is still the right graph, and matching is robust to that. A graph
+that has no edge for the error that actually occurred is a different situation.</p>
+<p>That distinction is the whole finding, more precisely stated than I could have put it before
+running this. Calibration drift in your error rates is survivable. Correlated errors are not,
+because they are not representable, and no amount of recalibration fixes something your model
+cannot express.</p>
+<h2>Where it loses</h2>
+<p>At distance 5 matching wins every row of regime B, by margins between 3x and 10x. Taken at
+face value that says the approach fails as codes grow, which would be the more important
+result and would undercut everything above.</p>
+<p>It is not what happened. The right panel is a budget sweep on a fixed configuration:</p>
+<table>
+<thead>
+<tr>
+<th>training shots</th>
+<th>distance 3 (MLP)</th>
+<th>distance 5 (MLP)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>120,000</td>
+<td>1.3x matching</td>
+<td>12.1x</td>
+</tr>
+<tr>
+<td>400,000</td>
+<td>0.9x</td>
+<td>5.4x</td>
+</tr>
+<tr>
+<td>800,000</td>
+<td>0.9x</td>
+<td>3.3x</td>
+</tr>
+</tbody>
+</table>
+<p>At distance 3 the networks reach parity by 400,000 shots and stop improving. At distance 5
+they are still improving at 800,000 with no sign of flattening. The main sweep ran at 400,000
+shots, so every distance-5 number in this post is from a model that had not finished learning.</p>
+<p>I could have left the distance-5 rows in a table and let readers assume they meant something
+about graph networks versus convolutions. Measuring the budget curve costs one extra
+experiment and converts a false conclusion into a known limitation.</p>
+<h2>Two smaller things worth reporting</h2>
+<p>At distance 3 with a physical error rate of 0.01, the MLP beats matching outright: 0.05562
+against 0.06056, intervals not overlapping. That is in regime A, the control, where matching
+has the correct noise model and is supposed to be near-optimal. I do not have a clean
+explanation for it, and I would want more error rates around that point before making
+anything of it.</p>
+<p>The architecture ordering also flips with code size. The plain MLP is best at distance 3, the
+graph network at distance 5, consistently across noise settings. The graph prior seems to
+cost more than it returns until there is enough structure to justify it. At distance 3 the
+whole syndrome is 32 values, and a fully connected layer can just look at all of them.</p>
+<h2>Real hardware, where it goes badly</h2>
+<p>Everything above is simulated. Google published syndrome measurements from their 2023
+Sycamore experiment along with their own decoders' predictions, so the same models can be
+tested against a real device with published baselines and no reimplementation in between.</p>
+<table>
+<thead>
+<tr>
+<th>experiment</th>
+<th>trivial</th>
+<th>pymatching</th>
+<th>correlated matching</th>
+<th>best neural</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d=3, 5 rounds</td>
+<td>0.29340</td>
+<td>0.14790</td>
+<td>0.13760</td>
+<td>0.15720</td>
+</tr>
+<tr>
+<td>d=3, 25 rounds</td>
+<td>0.49010</td>
+<td>0.43020</td>
+<td>0.42410</td>
+<td>0.48920</td>
+</tr>
+<tr>
+<td>d=5, 5 rounds</td>
+<td>0.38690</td>
+<td>0.14730</td>
+<td>0.12750</td>
+<td>0.26430</td>
+</tr>
+</tbody>
+</table>
+<p>The five-round result is respectable. The 25-round result is not: 0.48920 against a trivial
+floor of 0.49010 means the model learned essentially nothing.</p>
+<p>Each experiment has 50,000 shots. Seventy percent of that is 35,000 training examples, for an
+input of 200 detectors with a base flip rate near half. That is not enough supervision, and
+the budget curve above says exactly how far off it is.</p>
+<p>This is the most practically useful thing here. In simulation, training data is free and the
+constraint is patience. On hardware, every shot costs device time, and the shot budget is what
+actually limits learned decoders. The 2023 release is a generous dataset by the standards of
+published QEC experiments and it is still one to two orders of magnitude short of what these
+models want.</p>
+<h2>What this is and isn't</h2>
+<p>The architectures are standard. Neural decoding of surface codes goes back to Torlai and
+Melko in 2017, and the state of the art is AlphaQubit from Google DeepMind, trained with far
+more compute on real device data. Nothing here competes with that.</p>
+<p>What is mine is the measurement: holding total noise fixed while varying its structure, so
+the comparison isolates model mismatch rather than difficulty, and separating architecture
+effects from training budget instead of leaving them confounded.</p>
+<p>The honest summary is that matching's dominance is conditional on knowing your device, that
+the condition fails in exactly the way learned decoders are positioned to exploit, and that
+on real hardware today the binding constraint is not the decoder at all. It is how many shots
+you can afford.</p>
+<hr />
+<p><em>Code, weights and every number above:
+<a href="https://github.com/Bauxitiego/qec-neural-decoder">github.com/Bauxitiego/qec-neural-decoder</a>,
+<a href="https://huggingface.co/Bauxitiego/surface-code-neural-decoder">the models</a>,
+<a href="https://huggingface.co/datasets/Bauxitiego/surface-code-syndromes">the dataset</a>.
+Tables are generated from <code>runs/RESULTS.json</code> rather than transcribed.</em></p><div class="links"><a href="02-matching-blind-spot.html">Previous post</a><a href="./">All posts</a></div>
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>

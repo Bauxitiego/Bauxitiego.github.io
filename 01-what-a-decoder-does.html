@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a quantum error decoder actually does</title>
+<meta name="description" content="Quantum error correction explained for people who train models. No results, just the background I wish I'd had before starting.">
+<meta property="og:title" content="What a quantum error decoder actually does">
+<meta property="og:description" content="Quantum error correction explained for people who train models. No results, just the background I wish I'd had before starting.">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="style.css">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="">Diego F. Martínez-Valencia</a></h1>
+  <p>Applied AI scientist. Machine learning applied to quantum computing.</p>
+</header>
+<h1>What a quantum error decoder actually does</h1>
+<p><em>Post 1 of 3 on building neural decoders for the surface code. This one has no results in it.
+It is the background I wish I'd had before starting.</em></p>
+<p>Most explanations of quantum error correction are written for physicists. This one is
+written for people who train models. If you know what a sequence classifier is and have
+never thought about a qubit, you are the intended reader.</p>
+<h2>The problem in one paragraph</h2>
+<p>A physical qubit fails roughly once every thousand operations. A useful quantum computer
+needs error rates closer to one in a thousand trillion. Nobody expects hardware to close
+twelve orders of magnitude, so the gap is closed differently: spread one <em>logical</em> qubit
+across many physical ones, measure them constantly, and correct errors faster than they
+accumulate. The measuring is done by hardware. The correcting is done by software, in real
+time, and that software is currently one of the things standing between the machines that
+exist and the machines people want.</p>
+<p>That software is called a decoder. This post is about what it actually does.</p>
+<h2>You cannot look at a qubit</h2>
+<p>Here is the constraint that makes everything else strange. Measuring a quantum state
+destroys it. So you cannot check whether your logical qubit is still correct, because
+checking is what breaks it.</p>
+<p>The workaround is to measure something that reveals <em>whether an error happened</em> without
+revealing <em>what the qubit is</em>. In the surface code, you interleave your data qubits with
+extra qubits whose only job is to measure parity between neighbours. Those parity checks say
+"something flipped near here" while learning nothing about the encoded value.</p>
+<p>Those parity measurements are called the syndrome, and the syndrome is all a decoder ever
+sees. It never observes the error itself. It observes a shadow and has to infer the object.</p>
+<h2>What the data actually looks like</h2>
+<p>Strip the physics away and the shape is familiar.</p>
+<p>Every cycle, a few dozen parity checks report a bit. You run many cycles. So a single
+experiment produces a binary matrix of shape <code>[rounds, checks]</code>, which is a multi-channel
+binary time series. In the distance-5 code I've been working with, that's 24 channels over 26
+time steps, so 600 bits per shot.</p>
+<p>The label is one bit: did the logical qubit end up flipped or not.</p>
+<p>That's it. Binary sequence classification on sparse binary channels.</p>
+<p><img alt="Four real syndrome shots from a distance-5 code" src="figures/syndrome_shots.png" /></p><p class="figcap">Four actual shots. Rows are rounds, columns are parity checks, orange means the check fired.
+The grey blocks are padding: the first and last rounds genuinely have fewer checks than the
+middle ones, which is a detail that has bitten this project more than once. Two shots ended
+with the logical qubit intact and two did not, and the difference between those cases is not
+something you can read off by eye. That is the job.</p>
+<p>Three properties make it unusually pleasant as a machine learning problem, and they are worth
+appreciating because most real problems have none of them.</p>
+<p>The labels are exact. In simulation you know the true answer, because you generated the
+errors yourself. No annotation budget, no label noise, no two annotators disagreeing.</p>
+<p>The data is free and effectively unlimited. Stabiliser circuits turn out to be classically
+simulable in polynomial time, which is a genuinely surprising fact about quantum mechanics
+and the reason this whole field can be studied without a quantum computer. The <code>stim</code> library
+samples millions of shots per second on a laptop. There is no data scarcity here, only
+compute.</p>
+<p>And real hardware data exists as well. Google published the syndrome measurements from their
+2023 surface code experiment under CC-BY, including their own decoders' predictions, so you
+can test against a real device without owning one.</p>
+<h2>What makes it hard</h2>
+<p>Given free perfect labels, you might expect this to be easy. It isn't.</p>
+<p>Start with the fact that the syndrome is ambiguous by construction. Many different error
+patterns produce exactly the same syndrome, so identifying <em>the</em> error is not merely hard,
+it is impossible. What a decoder actually does is pick a correction from the most likely
+equivalence class. Two errors differing by a harmless loop are identical as far as the
+logical qubit is concerned. Two differing by a chain that crosses the whole patch are
+opposite. Telling those apart is the entire game.</p>
+<p>The measurements are also noisy themselves. A parity check can report a flip that never
+happened. That is why the syndrome is a time series rather than a snapshot: a real error
+persists across rounds, a measurement glitch does not, and the only way to distinguish them
+is to watch.</p>
+<p>Then there is the assumption everyone makes and no device honours. The neat mental model has
+each qubit failing independently. Actual hardware has crosstalk between neighbours, leakage
+out of the computational subspace entirely, and error rates that vary by an order of
+magnitude across the chip and drift over hours. Hold onto this one, because the rest of this
+series is about it.</p>
+<p>Finally, and this is the constraint that will feel familiar to anyone who has shipped a model
+under a latency budget: it has to run in microseconds. A slow decoder is not a slightly worse
+decoder. It is a useless one, because errors accumulate faster than it clears them.</p>
+<h2>The classical baseline is good</h2>
+<p>The standard decoder is minimum-weight perfect matching, and it deserves respect before
+anyone tries to beat it.</p>
+<p>The idea is elegant. Build a graph where each node is a parity check that fired and each edge
+is an error mechanism that could explain a pair of them. Then find the lowest-weight set of
+edges that accounts for every firing. That's a well-studied combinatorial problem with fast
+exact algorithms, and under the assumption that errors are independent it is close to optimal.</p>
+<p>Not "a reasonable heuristic". Close to optimal. Here is what that means concretely, from my
+own runs on simulated distance-5 data:</p>
+<table>
+<thead>
+<tr>
+<th>Physical error rate</th>
+<th>Do nothing</th>
+<th>Matching</th>
+<th>Matching's advantage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.001</td>
+<td>0.0571</td>
+<td>0.00016</td>
+<td>357x</td>
+</tr>
+<tr>
+<td>0.003</td>
+<td>0.1541</td>
+<td>0.00338</td>
+<td>46x</td>
+</tr>
+<tr>
+<td>0.010</td>
+<td>0.3549</td>
+<td>0.08352</td>
+<td>4.2x</td>
+</tr>
+</tbody>
+</table>
+<p>Any claim that a neural network "beats the classical decoder" should be read against that
+table. The bar is not doing better than nothing. The bar is a 357x reduction.</p>
+<h2>The other thing matching gets right</h2>
+<p>There is a check that any decoder has to pass, and it is a good one to know about because it
+catches broken implementations immediately.</p>
+<p>Below a certain physical error rate, called the threshold, making the code bigger should make
+the logical error rate <em>smaller</em>. Above it, making the code bigger makes things <em>worse</em>,
+because you have added more places for things to go wrong than you have added protection.</p>
+<p>So a correct decoder shows a crossover. Mine does:</p>
+<table>
+<thead>
+<tr>
+<th>Physical error rate</th>
+<th>Distance 3</th>
+<th>Distance 5</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.001</td>
+<td>0.00067</td>
+<td>0.00016</td>
+<td>bigger is better</td>
+</tr>
+<tr>
+<td>0.005</td>
+<td>0.01632</td>
+<td>0.01374</td>
+<td>bigger is better</td>
+</tr>
+<tr>
+<td>0.010</td>
+<td>0.05785</td>
+<td>0.08352</td>
+<td>bigger is worse</td>
+</tr>
+</tbody>
+</table>
+<p>The threshold sits between 0.005 and 0.01, which is where the literature puts it for this
+noise model. I ran that before writing a single line of model code, because a decoder study
+built on a baseline that does not reproduce known behaviour is worthless no matter what the
+model does afterwards.</p>
+<h2>So why would anyone use machine learning here</h2>
+<p>Because matching's strength is also exactly where it breaks.</p>
+<p>Matching is near-optimal <em>given a correct noise model</em>. It needs to know the probability of
+each error mechanism to weight the graph edges, and it assumes those mechanisms are
+independent. On a real device you have neither. Your calibration is approximate and stale,
+and crosstalk means errors genuinely are correlated.</p>
+<p>A learned decoder never gets told a noise model. It sees syndromes and outcomes and picks up
+whatever structure is actually there, including the correlations matching cannot express.</p>
+<p>That is the entire bet, and it is testable rather than rhetorical: if the mechanism is real,
+then the gap between learned and matching decoders should widen as the noise departs from
+what matching assumes, holding the total amount of noise fixed. If it does not widen, the
+story is wrong.</p>
+<p>Measuring that is post 2.</p>
+<hr />
+<p><em>Code, including the validation gates and the numbers above:
+<a href="https://github.com/Bauxitiego/qec-neural-decoder">github.com/Bauxitiego/qec-neural-decoder</a>.
+Everything is classically simulated and reproducible on a laptop.</em></p><div class="links"><a href="02-matching-blind-spot.html">Next post</a><a href="./">All posts</a></div>
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>
