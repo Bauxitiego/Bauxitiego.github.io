@@ -93,7 +93,7 @@ that generated the data. Meanwhile the orange line pulls away.</p>
 <p>Look at rows two and three. Per-qubit error rate spread, even at a factor of 1.75, costs
 matching almost nothing: penalties of 1.01x and 1.03x. Crosstalk at row four costs it 1.85x.</p>
 <p>I had assumed both forms of mis-specification would hurt, and they do not. A graph with
-slightly wrong edge weights is still the right graph, and matching is robust to that. A graph
+slightly wrong edge weights is still the right graph, and matching shrugs that off. A graph
 that has no edge for the error that actually occurred is a different situation.</p>
 <p>That distinction is the whole finding, more precisely stated than I could have put it before
 running this. Calibration drift in your error rates is survivable. Correlated errors are not,
@@ -201,10 +201,9 @@ more compute on real device data. Nothing here competes with that.</p>
 <p>What is mine is the measurement: holding total noise fixed while varying its structure, so
 the comparison isolates model mismatch rather than difficulty, and separating architecture
 effects from training budget instead of leaving them confounded.</p>
-<p>The honest summary is that matching's dominance is conditional on knowing your device, that
-the condition fails in exactly the way learned decoders are positioned to exploit, and that
-on real hardware today the binding constraint is not the decoder at all. It is how many shots
-you can afford.</p>
+<p>Matching's dominance is conditional on knowing your device, and that condition fails in
+exactly the way learned decoders are positioned to exploit. On real hardware today the
+binding constraint is not the decoder at all. It is how many shots you can afford.</p>
 <hr />
 <p><em>Code, weights and every number above:
 <a href="https://github.com/Bauxitiego/qec-neural-decoder">github.com/Bauxitiego/qec-neural-decoder</a>,
