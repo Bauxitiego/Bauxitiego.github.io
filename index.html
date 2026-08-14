@@ -17,20 +17,21 @@
   <nav><a href="">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
 </header>
 
-<h1 class="title">Neural decoders for the surface code</h1>
-<p class="meta">A three-part series. Machine learning applied to quantum error correction.</p>
-<p>Quantum computers need error correction to be useful, and the software that does the
-correcting is currently one of the things standing between the machines that exist and the
-machines people want. These posts explain that problem for a machine learning audience, then
-measure where a learned decoder beats the standard classical one.</p>
-<ul class="posts"><li><h2><a href="01-what-a-decoder-does.html">What a quantum error decoder actually does</a></h2><p>Quantum error correction explained for people who train models. No results, just the background I wish I'd had before starting.</p></li>
-<li><h2><a href="02-matching-blind-spot.html">Why the standard quantum decoder has a blind spot</a></h2><p>How minimum-weight perfect matching works, the two assumptions it rests on, and the one design decision that makes the experiment mean anything.</p></li>
-<li><h2><a href="03-results.html">When a learned decoder beats matching, and when it doesn't</a></h2><p>The numbers. A learned decoder matches MWPM given a correct noise model and beats a realistic wrong one by 2x, and the failures are as informative as the wins.</p></li></ul>
-<div class="links">
-  <a href="https://github.com/Bauxitiego/qec-neural-decoder">Code</a>
-  <a href="https://huggingface.co/Bauxitiego/surface-code-neural-decoder">Models</a>
-  <a href="https://huggingface.co/datasets/Bauxitiego/surface-code-syndromes">Dataset</a>
-</div>
+<p>Classical deep learning as the method, quantum computing as the domain. None of it runs
+on a quantum computer. See <a href="about.html">About</a> for why that framing is
+deliberate rather than a compromise.</p>
+
+<ul class="posts">
+<li><h2><a href="qec-decoder.html">Neural decoders for the surface code</a></h2>
+<p>A three-part series. Does a learned decoder beat the standard classical one
+(minimum-weight perfect matching), and under what conditions. It matches given a
+correct noise model and beats a realistic wrong one by 2x.</p></li>
+<li><h2><a href="neural-mis.html">Neural Maximum Independent Set</a></h2>
+<p>A GCN trained on free synthetic data, benchmarked against QOBLIB, a suite built by
+IBM Quantum, ZIB and Purdue to test quantum optimization methods. Wins on 23 of 50
+instances, loses badly on one family, and both the win and the loss are reported with
+the same weight.</p></li>
+</ul>
 
 <footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
 </div></body>
