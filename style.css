@@ -1,12 +1,12 @@
 
 :root {
   --ink: #1c1b19; --muted: #6a6862; --rule: #e0dcd3; --bg: #fdfcfa;
-  --link: #185FA5; --code-bg: #f2f0ec; --accent: #D85A30;
+  --link: #185FA5; --code-bg: #f2f0ec; --accent: #D85A30; --card-bg: #f8f6f2;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --ink: #e8e6e1; --muted: #9c9891; --rule: #35332e; --bg: #16151300;
-    --link: #85B7EB; --code-bg: #24221f; --accent: #F0997B;
+    --link: #85B7EB; --code-bg: #24221f; --accent: #F0997B; --card-bg: #1c1b18;
   }
   html { background: #161513; }
 }
@@ -17,19 +17,28 @@ body {
   font-size: 17px; line-height: 1.65; color: var(--ink); background: var(--bg);
   margin: 0; padding: 0 20px; -webkit-font-smoothing: antialiased;
 }
+body::before {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent); z-index: 10;
+}
 .wrap { max-width: 680px; margin: 0 auto; padding: 48px 0 96px; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 header.site { margin-bottom: 44px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
 header.site h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.2px; }
 header.site h1 a { color: var(--ink); }
-header.site p { color: var(--muted); font-size: 14.5px; margin: 0 0 12px; }
-header.site nav { display: flex; gap: 18px; }
-header.site nav a { font-size: 14.5px; }
+header.site p { color: var(--muted); font-size: 14.5px; margin: 0 0 14px; }
+header.site nav { display: flex; gap: 20px; }
+header.site nav a {
+  font-size: 14.5px; font-weight: 500; color: var(--muted);
+  padding-bottom: 2px; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+}
+header.site nav a:hover { color: var(--accent); text-decoration: none; border-bottom-color: var(--accent); }
 h1.title { font-size: 30px; font-weight: 600; line-height: 1.25; margin: 0 0 10px; letter-spacing: -0.5px; }
 .meta { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
-h2 { font-size: 20px; font-weight: 600; margin: 38px 0 12px; letter-spacing: -0.2px; }
-h3 { font-size: 17px; font-weight: 600; margin: 28px 0 8px; }
+h2 { font-size: 20px; font-weight: 600; margin: 42px 0 14px; letter-spacing: -0.2px; display: flex; align-items: center; gap: 10px; }
+h2::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 2px; background: var(--accent); }
+h3 { font-size: 17px; font-weight: 600; margin: 26px 0 6px; color: var(--accent); }
 p { margin: 0 0 17px; }
 ul, ol { margin: 0 0 17px; padding-left: 22px; }
 li { margin-bottom: 7px; }
@@ -45,13 +54,22 @@ img { max-width: 100%; height: auto; display: block; margin: 26px auto 10px; bor
 @media (prefers-color-scheme: dark) { img { opacity: 0.92; } }
 .figcap { color: var(--muted); font-size: 14.5px; text-align: center; margin: 0 0 30px; }
 table { border-collapse: collapse; width: 100%; margin: 22px 0; font-size: 15px; display: block; overflow-x: auto; }
-th { text-align: left; font-weight: 600; padding: 8px 12px; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+th { text-align: left; font-weight: 600; padding: 8px 12px; border-bottom: 2px solid var(--accent); white-space: nowrap; }
 td { padding: 7px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
 td:not(:first-child), th:not(:first-child) { text-align: right; }
 .cv td, .cv th { text-align: left !important; white-space: normal; }
-.posts { list-style: none; padding: 0; margin: 0; }
-.posts li { margin-bottom: 30px; }
-.posts h2 { font-size: 19px; margin: 0 0 5px; }
+.kicker {
+  display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 10px;
+}
+.posts { list-style: none; padding: 0; margin: 24px 0 0; }
+.posts li {
+  margin-bottom: 18px; padding: 20px 22px; border: 1px solid var(--rule);
+  border-radius: 12px; background: var(--card-bg); transition: border-color 0.15s, transform 0.15s;
+}
+.posts li:hover { border-color: var(--accent); transform: translateY(-1px); }
+.posts h2 { font-size: 19px; margin: 0 0 6px; display: block; }
+.posts h2::before { display: none; }
 .posts p { color: var(--muted); font-size: 15.5px; margin: 0; }
 .links { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); font-size: 15px; }
 .links a { margin-right: 18px; }
