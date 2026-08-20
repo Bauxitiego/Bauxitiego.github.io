@@ -126,6 +126,10 @@ trusting to a maintained implementation rather than risking a subtle bug from sc
 <tr><td>Causal forest</td><td><strong>2991.39</strong></td><td><strong>350.78</strong></td></tr>
 </tbody>
 </table>
+<img alt="Qini curves for the S-learner baseline and the causal forest, both far above random targeting, causal forest slightly ahead" src="figures/uplift-modeling-qini.png" />
+<p class="figcap">Both curves sit well above random targeting — real signal either way.
+The causal forest's edge over the baseline is visible but modest, matching the +1.8%
+number, not a dramatic separation.</p>
 <p>This is the one method that beats the baseline, on both outcomes: +1.8% on visit, +3.8% on
 conversion. Modest, but real and consistent in direction rather than winning one outcome and
 losing the other by chance. The honest tradeoff is runtime: 518s and 713s per outcome against

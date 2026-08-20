@@ -266,6 +266,10 @@ already runs on.</p>
 </tr>
 </tbody>
 </table>
+<img alt="Bar chart of logical error rate across four real Sycamore hardware experiments, showing the transformer beating pymatching only at d=3 5 rounds and matching the trivial floor elsewhere" src="figures/qec-transformer-device.png" />
+<p class="figcap">One real win (d=3, 5 rounds, left group). Two configurations where it
+lands on the trivial floor - it learned nothing. One clear loss (d=5, 5 rounds) where the
+GNN still beats it.</p>
 <p>At d=3, 5 rounds it wins outright: 0.1409 against pymatching's 0.1479, and against the
 previous best neural result there, ConvGRU at 0.1572. First time any decoder here beats a
 classical baseline on real hardware. At d=3, 25 rounds it's unchanged from before, still

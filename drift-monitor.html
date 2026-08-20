@@ -88,6 +88,9 @@ candidate.</p>
 <p>Static wins outright, and drift-triggered only narrowly beats naive periodic retraining -
 not the result the project was built to show. Segmenting by stream third makes the reason
 visible in a way the headline numbers hide:</p>
+<img alt="Accuracy over time for static, periodic, and drift-triggered retraining, showing all three tied during the dip and static pulling ahead only during the recovery period" src="figures/drift-monitor-accuracy.png" />
+<p class="figcap">All three tied during the dip (shaded). The entire gap opens in
+recovery, where static pulls away and both retraining strategies actually get worse.</p>
 <table>
 <thead>
 <tr><th>segment</th><th>static</th><th>periodic</th><th>drift-triggered</th></tr>

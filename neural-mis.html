@@ -72,6 +72,9 @@ output alone, without tree search, solving only 18.8% of their test instances ag
 for the full pipeline. Static output being weak on its own isn't a surprise in this
 literature. It would have been a surprise if I'd shipped the static version without checking.</p>
 <h2>The result</h2>
+<img alt="Bar chart comparing classical greedy and GCN mean solution quality across graph families, showing GCN wins on frb/C/R, ties on the easy families, and collapses on keller" src="figures/neural-mis-families.png" />
+<p class="figcap">Wins land exactly where greedy was weakest. keller is the one family
+where the GCN is worse than doing nothing clever at all.</p>
 <table>
 <thead>
 <tr>
