@@ -20,8 +20,9 @@
 
 <p>Classical deep learning as the method, quantum computing as the domain, for most of what's
 here — none of it runs on a quantum computer, see <a href="about.html">About</a> for why
-that framing is deliberate rather than a compromise. One exception below: causal inference
-on real ad-exposure data, a different kind of project on purpose.</p>
+that framing is deliberate rather than a compromise. Two exceptions below, on purpose:
+causal inference on real ad-exposure data, and an MLOps pipeline on real streaming market
+data.</p>
 
 <span class="kicker">Writing</span>
 <ul class="posts">
@@ -40,6 +41,10 @@ the same weight.</p></li>
 <p>Heterogeneous treatment effect estimation on 14 million rows of real randomized
 ad-exposure data. Meta-learners never beat a naive baseline; a causal forest does, by
 a real if modest margin. The one project here that overlaps with my actual day job.</p></li>
+<li><h2><a href="drift-monitor.html">A model that's never retrained beats two automatic retraining strategies</a></h2>
+<p>A production-style drift-monitoring and auto-retrain pipeline on real streaming
+market data. Static wins outright, not because retraining is pointless, but because of
+what happens after the drift it reacts to passes.</p></li>
 </ul>
 
 <span class="kicker" style="margin-top: 8px;">Book</span>

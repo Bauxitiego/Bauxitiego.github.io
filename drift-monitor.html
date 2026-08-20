@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A model that's never retrained beats two automatic retraining strategies</title>
+<meta name="description" content="A production-style drift-monitoring and auto-retrain pipeline on real streaming market data. Static beats both retraining policies - not because retraining is pointless, but because of what happens after the drift it reacts to passes.">
+<meta property="og:title" content="A model that's never retrained beats two automatic retraining strategies">
+<meta property="og:description" content="A production-style drift-monitoring and auto-retrain pipeline on real streaming market data. Static beats both retraining policies - not because retraining is pointless, but because of what happens after the drift it reacts to passes.">
+<meta property="og:type" content="article">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=e1a4f92">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="/">Diego F. Martínez-Valencia</a></h1>
+  <p>Machine learning applied to quantum computing.</p>
+  <nav><a href="/">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
+</header>
+<h1 class="title">A model that's never retrained beats two automatic retraining strategies</h1>
+<p class="meta">A third kind of project on this site: MLOps system design rather than a
+single trained model. Serve a model, detect when it's going stale two different ways,
+retrain automatically, only promote the result if it's actually better - then find out
+whether any of that was worth building.</p>
+<p>Short version: on real streaming market data with a real, documented reason to drift, a
+model that's never retrained beats both a naive periodic-retraining policy and an
+automatic drift-triggered one. Not because retraining is useless - during the actual drift
+event, all three are statistically tied. The entire gap opens afterward, once the market
+partially reverts to its earlier pattern, and the retrained models are the ones that lose
+by not seeing it coming.</p>
+<h2>Why this dataset</h2>
+<p>ELEC2, the Australian New South Wales electricity market dataset (Harries, 1999), the
+standard real benchmark in the concept-drift literature - 45,312 real half-hourly records,
+May 1996 to December 1998, predicting whether price will move up or down relative to a
+moving average. It has a genuine, well-documented reason to drift: the market was
+structurally expanded to include adjacent regions during the recording period. Split
+chronologically, not randomly, since shuffling would erase the exact thing this project is
+about: train on the earliest 20%, "deploy" the rest as a simulated live stream in real time
+order.</p>
+<p>A fixed model evaluated across that stream shows real, substantial instability - accuracy
+swinging from 0.57 to 0.83 across 2,000-row windows - but not the clean "steady decline"
+story a drift-monitoring writeup usually reaches for. It dips hard through the middle of the
+stream, then partially recovers toward the end. That shape turns out to matter more than
+anything else in this project.</p>
+<h2>Two kinds of drift, not one</h2>
+<p>A statistical test comparing feature distributions (Population Stability Index, and the
+Kolmogorov-Smirnov test as a second check) can tell you the inputs have shifted. It cannot
+tell you whether the relationship between inputs and outcome has changed - that needs a
+different kind of detector, one watching the model's live accuracy directly. This project
+uses both: PSI/KS on the five market features, and ADWIN (Bifet & Gavaldà, 2007, via the
+`river` library) tracking prediction correctness for a real change point.</p>
+<p>Both found real bugs when tested against the real data, not just synthetic cases. Three
+of the five features are exactly constant in the earliest slice of training data - Victoria's
+connection to the market likely wasn't active yet, which is itself consistent with why this
+dataset drifts at all. Quantile-based PSI can't define bins on zero-variance data, and the
+naive formula silently evaluated to 0.0 for those three features: "confirmed no drift," for
+what's actually the most dramatic drift PSI could ever be asked to describe, a feature going
+from constant to variable. Fixed to return an explicit "undefined" and fall back to the
+KS-test, with a regression test so it can't quietly come back. The concept-drift monitor had
+its own smaller bug - a reset that cleared the detector's history but not its internal
+sample counter - caught by a direct test before it reached anything real.</p>
+<h2>The retrain-and-promote pipeline</h2>
+<p>Three policies run over the identical chronological stream, in identical 500-row chunks,
+so the comparison is direct rather than three separate experiments compared after the fact:</p>
+<ul>
+<li><strong>Static.</strong> The original model, never retrained.</li>
+<li><strong>Periodic.</strong> Retrains on a fixed schedule regardless of any drift signal
+- the naive baseline any "smart" system has to beat.</li>
+<li><strong>Drift-triggered.</strong> Retrains only when PSI/KS or ADWIN actually fires.</li>
+</ul>
+<p>Retraining and promotion both happen inside a single recent window, never looking ahead
+of the pipeline's current position: a candidate model trains on the first 80% of the most
+recent 4,000 labelled rows and only replaces the current model if it beats it on the
+held-out last 20% of that same window. That check does real work - periodic rejects 9 of 18
+retrain attempts, drift-triggered rejects 19 of 36 - it isn't rubber-stamping every
+candidate.</p>
+<h2>The result</h2>
+<table>
+<thead>
+<tr><th>policy</th><th>overall accuracy</th><th>retrain attempts</th><th>promoted</th></tr>
+</thead>
+<tbody>
+<tr><td>static</td><td><strong>0.7079</strong></td><td>0</td><td>-</td></tr>
+<tr><td>periodic</td><td>0.6627</td><td>18</td><td>9</td></tr>
+<tr><td>drift-triggered</td><td>0.6667</td><td>36</td><td>17</td></tr>
+</tbody>
+</table>
+<p>Static wins outright, and drift-triggered only narrowly beats naive periodic retraining -
+not the result the project was built to show. Segmenting by stream third makes the reason
+visible in a way the headline numbers hide:</p>
+<table>
+<thead>
+<tr><th>segment</th><th>static</th><th>periodic</th><th>drift-triggered</th></tr>
+</thead>
+<tbody>
+<tr><td>first third</td><td>0.7239</td><td>0.7239</td><td>0.7171</td></tr>
+<tr><td>mid third (the dip)</td><td>0.6418</td><td>0.6413</td><td>0.6492</td></tr>
+<tr><td>last third (recovery)</td><td><strong>0.7582</strong></td><td>0.6230</td><td>0.6338</td></tr>
+</tbody>
+</table>
+<p>All three are effectively tied during the dip itself - retraining doesn't even help track
+the regime change while it's actually happening. The whole gap is in the recovery segment:
+static <em>improves</em> on its own first-third number, while both retraining policies get
+<em>worse</em> than they were during the drift they were reacting to. The mechanism: fitting
+new models on recent windows during the dip pulls both retrained pipelines toward the
+anomalous middle-period relationship between features and price movement. When the market
+partially reverts afterward, those adapted models are calibrated to a regime that's already
+passed, while the static model - never pulled away from the original pattern - turns out to
+still fit where the market ends up.</p>
+<h2>What this actually says about automatic retraining</h2>
+<p>Not that drift detection doesn't work - both detectors correctly identify real drift when
+it happens, checked directly against real data, not assumed from the algorithm's reputation.
+The finding is narrower and more useful: automatically retraining in response to detected
+drift is the right move when drift is persistent or directional, and actively
+counterproductive when drift is transient or mean-reverting, because a model that chases the
+most recent regime has no mechanism to notice when that regime has already ended. "Better
+than the outgoing model on a recent holdout" and "well-suited to where the data is heading"
+turned out to be different questions, and the evaluation check built into this pipeline can
+only ever answer the first one. A system built on data shaped like this would want drift
+detection to trigger a review, not an automatic promotion.</p>
+<hr />
+<p><em>Code, every script, and the full per-segment results:
+<a href="https://github.com/Bauxitiego/drift-monitor">github.com/Bauxitiego/drift-monitor</a>.</em></p>
+<div class="links"><a href="./">All posts</a></div>
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>
