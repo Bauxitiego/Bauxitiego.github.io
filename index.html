@@ -18,21 +18,28 @@
   <nav><a href="/">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
 </header>
 
-<p>Classical deep learning as the method, quantum computing as the domain. None of it runs
-on a quantum computer. See <a href="about.html">About</a> for why that framing is
-deliberate rather than a compromise.</p>
+<p>Classical deep learning as the method, quantum computing as the domain, for most of what's
+here — none of it runs on a quantum computer, see <a href="about.html">About</a> for why
+that framing is deliberate rather than a compromise. One exception below: causal inference
+on real ad-exposure data, a different kind of project on purpose.</p>
 
 <span class="kicker">Writing</span>
 <ul class="posts">
 <li><h2><a href="qec-decoder.html">Neural decoders for the surface code</a></h2>
-<p>A three-part series. Does a learned decoder beat the standard classical one
+<p>A four-part series. Does a learned decoder beat the standard classical one
 (minimum-weight perfect matching), and under what conditions. It matches given a
-correct noise model and beats a realistic wrong one by 2x.</p></li>
+correct noise model and beats a realistic wrong one by 2x. A fourth decoder, a
+smaller-scale attempt at DeepMind's AlphaQubit architecture, wins once on real
+hardware and loses everywhere else.</p></li>
 <li><h2><a href="neural-mis.html">Neural Maximum Independent Set</a></h2>
 <p>A GCN trained on free synthetic data, benchmarked against QOBLIB, a suite built by
 IBM Quantum, ZIB and Purdue to test quantum optimization methods. Wins on 23 of 50
 instances, loses badly on one family, and both the win and the loss are reported with
 the same weight.</p></li>
+<li><h2><a href="uplift-modeling.html">Uplift modeling on real ad data</a></h2>
+<p>Heterogeneous treatment effect estimation on 14 million rows of real randomized
+ad-exposure data. Meta-learners never beat a naive baseline; a causal forest does, by
+a real if modest margin. The one project here that overlaps with my actual day job.</p></li>
 </ul>
 
 <span class="kicker" style="margin-top: 8px;">Book</span>

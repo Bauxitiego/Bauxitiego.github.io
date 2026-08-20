@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta-learners lose to a naive baseline on real ad data. A causal forest doesn't.</title>
+<meta name="description" content="Heterogeneous treatment effect estimation on 14 million rows of real randomized ad-exposure data. S/T/X-learners don't beat a naive baseline. A causal forest does, by a real if modest margin.">
+<meta property="og:title" content="Meta-learners lose to a naive baseline on real ad data. A causal forest doesn't.">
+<meta property="og:description" content="Heterogeneous treatment effect estimation on 14 million rows of real randomized ad-exposure data. S/T/X-learners don't beat a naive baseline. A causal forest does, by a real if modest margin.">
+<meta property="og:type" content="article">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=e1a4f92">
+</head>
+<body><div class="wrap">
+<header class="site">
+  <h1><a href="/">Diego F. Martínez-Valencia</a></h1>
+  <p>Machine learning applied to quantum computing.</p>
+  <nav><a href="/">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
+</header>
+<h1 class="title">Meta-learners lose to a naive baseline on real ad data. A causal forest doesn't.</h1>
+<p class="meta">A different kind of project from the others here. Not quantum-adjacent -
+causal inference and experimentation, the actual discipline behind my day job in ad tech,
+on real randomized ad-exposure data rather than a simulator.</p>
+<p>Short version: given a treatment (shown an ad, or not) and an outcome, the interesting
+question isn't whether the treatment works on average, it's who it works on. On 14 million
+rows of real randomized ad data, every method tested finds real signal, beating random
+targeting by roughly 10x. But the more sophisticated methods split into two different
+stories: meta-learners (S/T/X-learner) never beat a naive baseline, and a causal forest
+does, on both outcomes tested, by a real if modest margin.</p>
+<h2>Why this dataset, and why this topic</h2>
+<p>Every other project here uses classical deep learning on a quantum-computing-flavored
+problem. This one is deliberately different. Causal inference and experimentation was a
+completely unrepresented area of what I'd built, and it happens to be the actual discipline
+behind ad tech: incrementality testing, attribution, who actually responds to a campaign
+versus who would have converted anyway. Most portfolio projects in this space are performed
+on data the author has no real relationship to. This one overlaps with work I actually do.</p>
+<p>The data is <a href="https://huggingface.co/datasets/criteo/criteo-uplift">Criteo's
+uplift benchmark</a>, 13,979,592 rows from an actual randomized incrementality test,
+released at the AdKDD 2018 workshop. Treatment ratio 0.85, not 50/50 - a real detail that
+matters later. Two outcomes: <code>visit</code> (4.7% base rate) and <code>conversion</code>
+(0.29%, genuinely rare).</p>
+<h2>The fundamental problem, and how to work around it anyway</h2>
+<p>You never observe both potential outcomes for the same unit. A user either saw the ad or
+didn't; there's no version of them in the other condition to compare against directly. That's
+not a data-quality gap, it's structural, and it means there's no per-individual ground truth
+to check a model's predictions against on real data, ever.</p>
+<p>Two things follow from taking that seriously instead of working around it quietly. First,
+before trusting any method on real data, check it against synthetic data with a known,
+closed-form treatment effect - the one case where ground truth actually exists. Second, once
+on real data, use a metric built for exactly this problem: the Qini curve, which compares
+group-level outcomes at each ranking cutoff rather than needing individual counterfactuals.
+Both of those were verified before being relied on, not assumed.</p>
+<h2>Gate 0: do the meta-learners recover a known effect?</h2>
+<p>Synthetic data, true treatment effect a known smooth function of two covariates, four more
+covariates pure noise the learners have to learn to ignore.</p>
+<table>
+<thead>
+<tr><th>learner</th><th>PEHE</th><th>corr(tau_hat, tau_true)</th></tr>
+</thead>
+<tbody>
+<tr><td>ATE-only (naive constant)</td><td>0.793</td><td>n/a</td></tr>
+<tr><td>S-learner</td><td>0.178</td><td>0.978</td></tr>
+<tr><td>T-learner</td><td>0.149</td><td>0.983</td></tr>
+<tr><td>X-learner</td><td>0.087</td><td>0.994</td></tr>
+</tbody>
+</table>
+<p>All three meta-learners dramatically beat "predict the average effect for everyone."
+The ordering, S-learner worst, X-learner best, matches what the meta-learner literature
+expects in a moderate-heterogeneity setting - not a coincidence, evidence the
+implementations do what they claim before they're trusted on data with no ground truth
+left to check.</p>
+<h2>Gate 1: is the real data actually randomized?</h2>
+<p>Checked directly rather than taken on the dataset's word. Standardized mean difference
+(SMD) between treated and control on all 12 covariates - the causal inference field's
+standard randomization check, and the reason it exists rather than just using a t-test is
+the actual finding here: every single covariate's t-test comes back significant at
+p &lt; 0.001, several at p &approx; 0. At 14 million rows, a mean difference of 0.02 standard
+deviations is enough to blow past any p-value threshold. The test is answering "is this
+difference exactly zero," and at this scale the answer is almost always no, regardless of
+whether the difference matters.</p>
+<p>SMD answers the actual question. Worst |SMD| across all 12 features: 0.049, well under the
+conventional 0.1 imbalance threshold. Genuinely balanced, on every feature, despite every
+p-value screaming otherwise. Worth having found live in real data rather than just read
+about in a textbook chapter.</p>
+<h2>Gates 2-3: meta-learners on real data</h2>
+<p>3 million training rows, 1 million held out, XGBoost as the base learner throughout.</p>
+<table>
+<thead>
+<tr><th>method</th><th>visit</th><th>conversion</th></tr>
+</thead>
+<tbody>
+<tr><td>S-learner (baseline)</td><td>2938.00</td><td>337.96</td></tr>
+<tr><td>T-learner</td><td>2803.43</td><td>315.67</td></tr>
+<tr><td>X-learner</td><td>2938.39</td><td>319.43</td></tr>
+<tr><td>random targeting</td><td>188.69</td><td>-7.78</td></tr>
+</tbody>
+</table>
+<p>All three beat random by roughly 10x - real heterogeneity, not noise. But neither
+T-learner nor X-learner beats the naive S-learner baseline on either outcome. T-learner is
+worst both times, consistent with its known weakness: with an 85/15 treatment split, the
+control-arm model is fit on roughly 450,000 rows against the treated model's 2.55 million,
+and T-learner has no mechanism to share information across that imbalance. X-learner exists
+specifically to correct this, and it does recover the ground T-learner lost - X beats T on
+both outcomes, exactly the direction the theory predicts - but it only ties the baseline on
+visit and stays behind it on conversion.</p>
+<p>The likely explanation isn't that the framework is wrong, it's that the S-learner's
+textbook weakness (a shared model implicitly discounting the treatment column) needs a base
+learner prone to missing treatment-covariate interactions, and XGBoost with 200 trees and
+millions of rows per arm doesn't have much trouble finding those interactions even sharing
+one model. The theoretical case for T/X-learners is strongest when arms are severely
+imbalanced <em>and</em> the base learner is weak enough to miss interactions in a shared
+model. Only the first condition holds here.</p>
+<h2>Gate 4: a causal forest, a genuinely different method</h2>
+<p>Validated the same way as the meta-learners first - PEHE 0.101 on the synthetic
+ground truth, close to the X-learner's 0.087 - before trusting it on real data. Same seed,
+same train/test split as Gates 2-3, via <code>econml</code> rather than reimplemented:
+honest splitting and out-of-bag effect estimation are real algorithmic subtleties worth
+trusting to a maintained implementation rather than risking a subtle bug from scratch.</p>
+<table>
+<thead>
+<tr><th>method</th><th>visit</th><th>conversion</th></tr>
+</thead>
+<tbody>
+<tr><td>S-learner (baseline)</td><td>2938.00</td><td>337.96</td></tr>
+<tr><td>X-learner</td><td>2938.39</td><td>319.43</td></tr>
+<tr><td>Causal forest</td><td><strong>2991.39</strong></td><td><strong>350.78</strong></td></tr>
+</tbody>
+</table>
+<p>This is the one method that beats the baseline, on both outcomes: +1.8% on visit, +3.8% on
+conversion. Modest, but real and consistent in direction rather than winning one outcome and
+losing the other by chance. The honest tradeoff is runtime: 518s and 713s per outcome against
+4-10s for the meta-learners combined. Whether that's worth a low-single-digit Qini
+improvement is a real production question, not a rhetorical one. In a system retraining
+hourly it likely isn't. In a monthly targeting decision against a large ad budget, it easily
+could be.</p>
+<h2>What this is and isn't</h2>
+<p>S/T/X meta-learners are Kunzel et al. 2019's framework. Causal forests are Athey and
+Wager 2019's method. Nothing architecturally new in either. What's mine is implementing the
+meta-learners directly rather than calling a pre-built uplift library, and taking the
+validation problem seriously: checking methods against known ground truth before trusting
+them where none exists, and verifying the evaluation metric itself before relying on it as
+the only judge.</p>
+<p>The finding isn't "sophisticated methods win" or "simple methods win." Both are true at
+once, depending on which question is being asked. If the question is whether a fast, simple
+approach captures the real signal, the S-learner already does, and the meta-learner
+machinery doesn't add anything here. If the question is what's the best achievable
+targeting, causal forest earns its extra cost with a real edge on both outcomes tested.
+Reporting only one half would be the misleading version of an otherwise complete result.</p>
+<hr />
+<p><em>Code and every number above:
+<a href="https://github.com/Bauxitiego/uplift-modeling">github.com/Bauxitiego/uplift-modeling</a>.</em></p>
+<div class="links"><a href="./">All posts</a></div>
+<footer>Written by Diego F. Martínez-Valencia. Code on <a href="https://github.com/Bauxitiego">GitHub</a>, artifacts on <a href="https://huggingface.co/Bauxitiego">Hugging Face</a>.</footer>
+</div></body>
+</html>
