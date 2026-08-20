@@ -195,6 +195,92 @@ constraint is patience. On hardware, every shot costs device time, and the shot 
 actually limits learned decoders. The 2023 release is a generous dataset by the standards of
 published QEC experiments and it is still one to two orders of magnitude short of what these
 models want.</p>
+<h2>A fourth decoder: what AlphaQubit's architecture actually adds</h2>
+<p>Everything above predates a later addition to this repo. Google DeepMind's AlphaQubit
+(Bausch et al., <em>Nature</em>, Nov 2024) is a recurrent, transformer-based decoder that beat
+prior state of the art specifically on real Sycamore data at distance 3 and 5, the exact
+regime where every model on this page loses to matching. That's a direct target, not a
+passing resemblance, so I built a smaller-scale version of the same idea and ran it through
+the same evaluation as the other three: identical regimes, identical held-out shots, no
+separate treatment.</p>
+<p>ConvGRU already has local structure (convolution) and temporal recurrence (a GRU). The GNN
+already has structured message-passing, on the same detector graph matching uses. Neither
+lets a detector attend to every other detector in its own round directly, only to nearby or
+graph-adjacent ones, so a correlation spanning the lattice has to relay across several hops
+or several rounds. Self-attention reaches all of them in one step. That's the specific piece
+AlphaQubit adds on top of what was already here, and the piece this decoder tests.</p>
+<p>One real bug, caught before it shipped: the surface code's first and last rounds carry
+fewer detectors than the middle ones (Z-stabilisers only, then data-qubit measurements), so
+padded array index does not track the same physical stabiliser across a round where the width
+changes. A recurrent state carried by array position instead of by the stabiliser's actual
+(x, y) coordinate would silently merge two unrelated stabilisers' histories exactly at that
+boundary. Checked directly against stim's own detector coordinates before trusting it, not
+assumed: index 0 in round 0 and index 0 in round 1 land on different physical locations.
+Fixed by indexing the recurrent state by coordinate, with a dedicated test proving the
+disagreement is real, not by array position.</p>
+<h3>In simulation, it never wins</h3>
+<p>In the control regime and the correlated-noise regime, the transformer never wins. Every
+row, both distances, all three of the earlier models beat it. Parameter count isn't the
+excuse: it's held within 1.17x of the other three, the same discipline the whole comparison
+already runs on.</p>
+<h3>On real hardware, the actual target, it's genuinely mixed</h3>
+<p>Real Sycamore hardware, the actual regime this addition was built for:</p>
+<table>
+<thead>
+<tr>
+<th>experiment</th>
+<th>trivial</th>
+<th>pymatching</th>
+<th>correlated</th>
+<th>best neural</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>d=3, 5 rounds</td>
+<td>0.29340</td>
+<td>0.14790</td>
+<td>0.13760</td>
+<td>0.14090 (transformer)</td>
+</tr>
+<tr>
+<td>d=3, 25 rounds</td>
+<td>0.49010</td>
+<td>0.43020</td>
+<td>0.42410</td>
+<td>0.48640 (transformer)</td>
+</tr>
+<tr>
+<td>d=5, 5 rounds</td>
+<td>0.38690</td>
+<td>0.14730</td>
+<td>0.12750</td>
+<td>0.26430 (gnn)</td>
+</tr>
+<tr>
+<td>d=5, 25 rounds</td>
+<td>0.50520</td>
+<td>0.43180</td>
+<td>0.40650</td>
+<td>0.50520 (transformer)</td>
+</tr>
+</tbody>
+</table>
+<p>At d=3, 5 rounds it wins outright: 0.1409 against pymatching's 0.1479, and against the
+previous best neural result there, ConvGRU at 0.1572. First time any decoder here beats a
+classical baseline on real hardware. At d=3, 25 rounds it's unchanged from before, still
+pinned near the trivial floor for the same reason already established: 35,000 training shots
+isn't enough supervision at that shot count, and no architecture fixes a training-data
+shortage. At d=5, 5 rounds it loses outright, worse than the GNN's earlier 0.2643. And d=5,
+25 rounds, a configuration never evaluated with the earlier three architectures at all,
+comes back at exactly 0.5052, identical to the trivial floor to five decimal places. It
+learned nothing.</p>
+<p>So: one real win, at the smallest, most favourable configuration on real hardware, and
+losses everywhere else, including one total failure. Not the clean "AlphaQubit's ideas fix
+the gap" result, and not nothing either. The honest read is narrower than either: the
+specific mechanism AlphaQubit adds helps exactly where the code is small enough and the round
+count short enough for attention's extra reach to matter before the training-shot shortage
+dominates everything else. That's a real, specific finding, not a hedge.</p>
 <h2>What this is and isn't</h2>
 <p>The architectures are standard. Neural decoding of surface codes goes back to Torlai and
 Melko in 2017, and the state of the art is AlphaQubit from Google DeepMind, trained with far
