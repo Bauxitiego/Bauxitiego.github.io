@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The specific decklist beats the archetype label, by a small real margin</title>
-<meta name="description" content="A card-aware model predicts a real MTGO Standard decklist's tournament performance better than its archetype label alone - a small, real effect, confirmed two ways rather than reported on one number. 13,036 real decklists, real outcomes.">
+<meta name="description" content="A card-aware model predicts a real MTGO Standard decklist's tournament performance better than its archetype label alone. A small, real effect, checked two separate ways. 13,036 real decklists, real outcomes.">
 <meta property="og:title" content="The specific decklist beats the archetype label, by a small real margin">
-<meta property="og:description" content="A card-aware model predicts a real MTGO Standard decklist's tournament performance better than its archetype label alone - a small, real effect, confirmed two ways rather than reported on one number. 13,036 real decklists, real outcomes.">
+<meta property="og:description" content="A card-aware model predicts a real MTGO Standard decklist's tournament performance better than its archetype label alone. A small, real effect, checked two separate ways. 13,036 real decklists, real outcomes.">
 <meta property="og:type" content="article">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css?v=e1a4f92">
@@ -18,63 +18,63 @@
   <nav><a href="/">Writing</a><a href="about.html">About</a><a href="cv.html">CV</a></nav>
 </header>
 <h1 class="title">The specific decklist beats the archetype label, by a small real margin</h1>
-<p class="meta">Outside the quantum-computing focus of the rest of this site - I started
-playing Magic (Marvel Super Heroes precons pulled me in) and wanted to know how a specific
-deck I'm building would actually perform, and what to change about it, not "Red Aggro is at
-54% this week." A personal-interest project, reported with the same discipline as the rest
-of this site.</p>
-<p>Short version: predicting a real MTGO Standard decklist's tournament performance from its
-actual card list beats predicting from its archetype label alone - archetype-only gets
-R²=0.018, reading the real card list gets R²=0.028 - and that gap is real, confirmed two
-separate ways rather than reported on one number. It is also small. This isn't a working
-win-rate predictor; it's evidence that the card list itself carries signal an archetype tag
-can't.</p>
-<h2>The methodological trap, avoided before writing any code</h2>
-<p>The obvious data source for "deck vs. deck matchup performance" is a site like
-magicmeta.net's Standard Matchup Matrix - real, structured, archetype-vs-archetype win rates.
-Using it as a training label would have made the entire project circular: if every deck
-tagged "Red Aggro" gets Red Aggro's archetype-level win rate as its label, a model wins by
-reconstructing the archetype and looking up its rate, which proves nothing about reading the
-actual 60 cards. Two other candidate sources, aetherhub.com and mtgdecks.net, both declare
-<code>Content-Signal: ai-train=no</code> in their robots.txt, checked directly before writing
-a scraper - ruled out on that basis regardless of the circularity question.</p>
-<p>What's used instead: <code>mtgo.com</code>'s own official event pages, which embed real,
-individual decklists joined to real per-player standings (rank, game win %) by login ID - a
-specific list's specific real result, not an archetype average. 417 real Standard Challenge
-events, September 2025 through August 2026, self-rate-limited well past what its (nonexistent)
-robots.txt would require. 13,036 decklists, every one of them joined to a real outcome.</p>
-<h2>A data anomaly that turned out to be structurally real, not corrupted</h2>
-<p>Resolving MTGO's card names against Scryfall left 4.13% of all card references unmatched.
-Most of that (98 of 156 distinct missing names) turned out to be a simple naming-convention
-gap: MTGO reports only a split/adventure/double-faced card's front face
+<p class="meta">I started playing Magic (Marvel Super Heroes precons pulled me in) and
+wanted to know how a specific deck I'm building would actually perform, and what to
+change about it. It's separate from the quantum-computing work elsewhere on this site,
+built and checked the same way.</p>
+<p>Predicting a real MTGO Standard decklist's tournament performance from its actual card
+list beats predicting from its archetype label alone. Archetype-only gets R²=0.018.
+Reading the real card list gets R²=0.028. The gap held up under two separate checks, and
+it's still small. This isn't a working win-rate predictor. It's a card list carrying
+signal an archetype tag can't.</p>
+<h2>The data source that would have made this circular</h2>
+<p>The obvious source for "deck vs. deck matchup performance" is a site like
+magicmeta.net's Standard Matchup Matrix: real, structured, archetype-vs-archetype win
+rates. Training on it would have made the whole project circular. If every deck tagged
+"Red Aggro" gets Red Aggro's archetype-level win rate as its label, a model wins by
+reconstructing the archetype and looking up its rate, and that proves nothing about
+reading the actual 60 cards. Two other candidates, aetherhub.com and mtgdecks.net, both
+declare <code>Content-Signal: ai-train=no</code> in their robots.txt, checked before
+writing a scraper. Ruled out on that basis alone.</p>
+<p>What's used instead: <code>mtgo.com</code>'s own official event pages, which embed
+individual decklists joined to per-player standings (rank, game win %) by login ID. A
+specific list, tied to its specific real result. 417 real Standard Challenge events,
+September 2025 through August 2026, self-rate-limited well past what its robots.txt
+would require if it had one. 13,036 decklists, every one joined to a real outcome.</p>
+<h2>One card-name mismatch turned into a real investigation</h2>
+<p>Resolving MTGO's card names against Scryfall left 4.13% of all card references
+unmatched. Most of that (98 of 156 distinct missing names) came from a naming-convention
+gap: MTGO reports only a split, adventure, or double-faced card's front face
 (<code>Cheeky House-Mouse</code>), where Scryfall keys the full card
-(<code>Cheeky House-Mouse // Squeak By</code>) - fixed with a front-face index.</p>
-<p>What was left, 57 distinct card names all tagged with MTGO's internal <code>OM1</code>
-cardset code, didn't yield to that fix, so it got investigated properly instead of shrugged
-off. A live Scryfall search for any of these names - <code>Kavaero, Mind-Bitten</code>,
-<code>Bayo, Irritable Instructor</code>, <code>Rizna, the Spider-Crowned</code> - returns
-zero results, not just absent from a local snapshot but absent from Scryfall's live database
-and its autocomplete entirely, confirmed against a same-day re-download. Scryfall does have a
-real set coded <code>om1</code> ("Through the Omenpaths," a digital Spider-Man exclusive with
-genuine Marvel names like <code>Agent Venom</code>) - but MTGO's <code>OM1</code>-tagged
-cards are a thematically coherent, unrelated spider/web-themed set (<code>Leyline
-Weaver</code>, <code>Withar, Cocoon Keeper</code>) with a sane five-color, full-rarity, 0-5
-mana curve spread across 92% of events and 61% of decks, a few cards per deck at a time - the
-structural signature of a real, complete set, not corrupted data. Most likely an MTGO-internal
-set-code collision with Scryfall's own <code>om1</code>, not the same product under a
-formatting mismatch. Resolved pragmatically: for the ~3% of card slots this touches, mana
-cost, color, and card type - the features this project actually needs - come directly from
-MTGO's own card attributes instead of Scryfall, so nothing downstream loses information over
-it.</p>
-<h2>Archetypes had to be invented, honestly</h2>
-<p>MTGO's raw data has no archetype or deck-type field at all - checked directly against the
-JSON keys, not assumed missing. Labels are inferred by TF-IDF-weighted K-means clustering
-over each deck's nonland card-inclusion vector (k=20, chosen by silhouette score), the same
-general technique real metagame-analysis tools use. These are cluster IDs, referred to as
-<em>inferred</em> clusters everywhere in this project, never presented as official archetype
-names - a burn shell full of <code>Nova Hellkite</code> and <code>Lightning Strike</code>,
-a tempo shell full of <code>Sleight of Hand</code> and <code>Slickshot Show-Off</code>, and
-seventeen more, none of them named by a human.</p>
+(<code>Cheeky House-Mouse // Squeak By</code>). A front-face index fixed it.</p>
+<p>What was left, 57 distinct card names tagged with MTGO's internal <code>OM1</code>
+cardset code, didn't respond to that fix. A live Scryfall search for any of these names,
+<code>Kavaero, Mind-Bitten</code>, <code>Bayo, Irritable Instructor</code>,
+<code>Rizna, the Spider-Crowned</code>, returns zero results. Not just missing from a
+local snapshot. Missing from Scryfall's live database and its autocomplete, confirmed
+against a same-day re-download. Scryfall does have a real set coded <code>om1</code>
+("Through the Omenpaths," a digital Spider-Man exclusive with genuine Marvel names like
+<code>Agent Venom</code>), but MTGO's <code>OM1</code>-tagged cards are a thematically
+coherent, unrelated spider and web-themed set (<code>Leyline Weaver</code>,
+<code>Withar, Cocoon Keeper</code>) with a sane five-color, full-rarity, 0-5 mana curve
+spread across 92% of events and 61% of decks, a few cards per deck at a time. That's the
+structural signature of a real, complete set. Most likely an MTGO-internal set-code
+collision with Scryfall's own <code>om1</code>. For the roughly 3% of card slots this
+touches, mana cost, color, and card type come directly from MTGO's own card attributes
+instead of Scryfall, so the deck features stay correct either way.</p>
+<img alt="Bar chart of card-name miss rate against Scryfall by MTGO cardset code, before and after the split-card front-face fix. Every real set drops to near zero after the fix except OM1, which stays at 42.5% in both bars." src="figures/mtg-deck-matchup-card-resolution.png" />
+<p class="figcap">Every real set's mismatch was a naming-convention gap, and it
+disappears once fixed. OM1 doesn't move. It isn't a formatting problem; the cards
+aren't in Scryfall under any name.</p>
+<h2>Archetypes aren't in the raw data</h2>
+<p>MTGO's raw data has no archetype or deck-type field at all, checked directly against
+the JSON keys. Labels here are inferred by TF-IDF-weighted K-means clustering over each
+deck's nonland card-inclusion vector (k=20, chosen by silhouette score), the same general
+technique real metagame-analysis tools use. These are cluster IDs, called
+<em>inferred</em> clusters everywhere in this project rather than official archetype
+names: a burn shell full of <code>Nova Hellkite</code> and <code>Lightning Strike</code>,
+a tempo shell full of <code>Sleight of Hand</code> and <code>Slickshot Show-Off</code>,
+and eighteen more, none of them named by a human.</p>
 <h2>The result</h2>
 <table>
 <thead>
@@ -85,42 +85,38 @@ seventeen more, none of them named by a human.</p>
 <tr><td>card-aware (Ridge)</td><td>0.0931</td><td>0.1222</td><td><strong>0.0277</strong></td></tr>
 </tbody>
 </table>
-<p class="figcap">5-fold cross-validation, grouped by event - sibling decklists from the
-same tournament share a metagame and field strength, and a random split would let a model
-partly learn "this event's field was weak" instead of "this decklist is good."</p>
-<p>R² improves by +0.0099. Before trusting that as "the model reads the decklist," it has to
-survive being checked, not just reported:</p>
+<p class="figcap">5-fold cross-validation, grouped by event. Sibling decklists from the
+same tournament share a metagame and field strength, and a random split would let a
+model partly learn "this event's field was weak" instead of "this decklist is good."</p>
+<p>R² improves by +0.0099. That number alone doesn't prove the model reads the decklist.
+Two checks had to hold first.</p>
 <p><strong>Is it a modeling-capacity artifact?</strong> A nonlinear model
-(<code>HistGradientBoosting</code>) on the identical features gets R²=0.0238 - worse than the
-linear one. A more expressive model doesn't find more signal sitting there; the effect really
-is this small, regardless of model family.</p>
+(<code>HistGradientBoosting</code>) on the identical features gets R²=0.0211, worse than
+the linear one. A more expressive model doesn't find more signal sitting there. The
+effect really is this small, regardless of model family.</p>
 <p><strong>Does it discriminate within an archetype in a way that matches reality?</strong>
-For every deck, its deviation from its own cluster's mean outcome, real result against model
-prediction, correlated across all 13,036 decks: <strong>r=0.0889 (p=2.60e-24)</strong>. Real
-and about as statistically unambiguous as a correlation gets - but the effect size is small,
-and that p-value mostly reflects the sample size, not the strength of the relationship,
-worth saying plainly rather than letting the exponent imply more than the r does. Per
-cluster, the picture is less clean: most of the 19 clusters with at least 30 decks show a
-positive within-cluster correlation, up to r=0.19 in the strongest one, but five show a
-<em>negative</em> one - the model's within-cluster ranking runs the wrong direction there.</p>
-<h2>What this actually says</h2>
-<p>The specific card list carries real signal beyond the archetype label - confirmed two
-ways, not accepted on one number - and it's a small effect. Predicting an individual MTGO
-decklist's tournament performance from its card list isn't a solved problem at this data
-volume, and this project doesn't claim otherwise. What it demonstrates is narrower: the list
-itself does *some* of the work an archetype label alone can't, which was the actual question,
-not "build an accurate win-rate predictor."</p>
+For every deck, compare its deviation from its own cluster's mean outcome, the real
+result against the model's prediction, correlated across all 13,036 decks:
+<strong>r=0.0889 (p=2.60e-24)</strong>. That's about as statistically unambiguous as a
+correlation gets, but the effect size is small. The p-value is doing what large sample
+sizes do to p-values, not reporting a strong relationship. Per cluster, the picture is
+messier: most of the 19 clusters with at least 30 decks show a positive within-cluster
+correlation, up to r=0.19 in the strongest one, but five show a negative one, where the
+model's within-cluster ranking runs the wrong direction.</p>
+<img alt="Two-panel figure. Left: bar chart showing R-squared for the archetype-only baseline (0.0178), card-aware Ridge model (0.0277), and card-aware HistGradientBoosting model (0.0211) - the nonlinear model does not beat the linear one. Right: bar chart of within-cluster correlation between actual and predicted deviation for each of the 20 inferred archetype clusters, sorted ascending, with five clusters showing a negative correlation." src="figures/mtg-deck-matchup-results.png" />
+<p class="figcap">Left: the nonlinear model doesn't beat the linear one, so the gap over
+baseline isn't a modeling-capacity artifact. Right: within-cluster discrimination per
+inferred archetype, real on the whole, but five clusters (c10, c11, c12, c17, c19) run
+the wrong way.</p>
 <h2>The swap search</h2>
-<p>Built on top of the trained model anyway, because it's the part closest to actually new
-and the honesty checks above earned it: single-card substitutions searched per nonland slot,
-matched by supertype, mana cost within 1, and color identity a subset of the deck's own,
-restricted to genuine Scryfall Standard-legal cards (the <code>OM1</code> fallback slice has
-no legality list, so it's excluded as a swap target rather than guessed at). Runs in under a
-second per deck against a ~4,600-card legal pool. Tried on the highest-win-rate real decklist
-in the corpus, a Sultai Vivi Ornitier shell that went 100%: top suggestion is <code>Vivi
-Ornitier -> Flamewake Phoenix</code>, predicted delta +0.0084. Small, on purpose - a tool
-built on a weak-but-real model should recommend weak improvements, not confident ones it
-can't back up.</p>
+<p>Single-card substitutions searched per nonland slot, matched by supertype, mana cost
+within 1, and color identity a subset of the deck's own, restricted to genuine Scryfall
+Standard-legal cards. The <code>OM1</code> fallback slice has no legality list, so it's
+excluded as a swap target. The search runs in under a second per deck against a
+~4,600-card legal pool.</p>
+<p>Tried on the highest-win-rate real decklist in the corpus, a Sultai Vivi Ornitier
+shell that went 100%. Top suggestion: swap <code>Vivi Ornitier</code> for
+<code>Flamewake Phoenix</code>, predicted delta +0.0084.</p>
 <hr />
 <p><em>Code, every script, and the full per-cluster breakdown:
 <a href="https://github.com/Bauxitiego/mtg-deck-matchup">github.com/Bauxitiego/mtg-deck-matchup</a>.</em></p>
